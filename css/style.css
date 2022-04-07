@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+
+body {
+    background-color: black;   
+    /* background: url('../img/bg-spiral.svg'); */
+    background: url('../img/bg-sb1.svg');    
+    background-size: cover;
+    color: white;
+}
+
+.main {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.gameArea {
+    display: flex;
+    align-items: center;
+}
+
+#loading {
+    width: 75px;
+    height: 75px;
+    padding-left:10px;
+}
+
+#health {
+    display: none;
+    padding-right: 25px;
+}
+
+#score {
+    display: none;
+    padding-left: 25px;
+}
+
+.buttons{
+    display: none;
+}
+
+button {
+    font-family: 'PRESS START 2P';
+}
+
+.action-btn{
+    text-decoration: none;
+    color: black;
+    border: 1px solid #06365f;
+    border-radius: 10px;
+    width:150px;
+    height:55px;
+    font-weight: bold;
+    margin-top: 15px;    
+}
+
+#start-button {
+    text-decoration: none;
+    color: black;
+    border: 1px solid #06365f;
+    border-radius: 10px;
+    width:150px;
+    height:55px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+span, h5 {
+    font-family: 'Press Start 2P';    
+}
+
+
+p {
+    display: none;
+    font-family: 'Press Start 2P';
+}
+
+#loading {
+    position: absolute;
+    margin-top: -75px;
+}
+
+#center-screen{
+    position: absolute;
+    margin-top: -275px;    
+    color: white;
+}
+
+
