@@ -3,14 +3,14 @@ class Player {
         this.action = 0;
         this.health = 10;
         this.score = 0;
-        this.icon = 'panda';
+        this.icon = '';
         this.enemy = "tiger";
         this.lastRound;
         this.round = [];
     }
 
-    chooseIcon(icon){
-        this.icon = icon;
+    chooseIcon(opt){
+        this.icon = playerIcons[opt];
     }
 
     attack(attack){
@@ -45,15 +45,11 @@ class Player {
             this.health--;
         }else if(this.lastRound>0){
             text = `You won!`;
-            this.score+=10;
+            this.score+=100;
         }else{
             text = `Tie`;
         }
         return text;        
-    }
-
-    gameWon(){
-        this.score+=10;
     }
 }
 
@@ -61,17 +57,22 @@ window.onload = () => {
     loadGame();
 
     document.getElementById('start-button').onclick = () => {
-        if( gameState == 2 ){
-            gameEnd();
-            gameState = 3;        
-            return true;
-        } else if( gameState == 3 ){
-            begin3();
-        }else{
-            begin3();
-            toggleDOM('loading');
-            toggleDOM('health');
-            toggleDOM('score');
+        switch(gameState) {
+            case -1:
+                window.location.reload();
+                break;
+            case 0:
+                charSelect();
+                break;
+            case 3:
+                gameEnd();
+                gameState = 4;
+                break;
+            case 4:
+                gameStart();
+                break;
+            default:
+                gameStart();
         }
     };
 
@@ -86,10 +87,24 @@ function getMousePosition(canvas, event) {
     let x = event.clientX - rect.left;
     let y = event.clientY - rect.top;
     clickEvents(x,y);
-    console.log("Coordinate x: " + x, 
-                "Coordinate y: " + y);
+    // console.log("Coordinate x: " + x, 
+    //             "Coordinate y: " + y);
     }
+/*
+Firefox SVG Bug Fix
+*/
+let extension = ".svg";
+let path = "latest/";
+let tweSrc = "https://twemoji.maxcdn.com/v/latest/";
+if(navigator.userAgent.indexOf("Firefox")){
+    extension = ".png";
+    path = "72x72/"
+    tweSrc = "https://twemoji.maxcdn.com/v/latest/"
+}
 
+function genSrc(icon){
+    return `${tweSrc}${path}${icon}${extension}`
+}
 /*
 Declarations
 */
@@ -116,7 +131,8 @@ const playSpace = {
     },
 }
 
-const players = ['chick','deer','monkey','panda','racoon','wolf'];
+const playerIcons = ['chick','deer','monkey','panda','racoon','wolf'];
+const enemyIcons = ['chick','deer','monkey','panda','racoon','wolf'];
 
 const gameArea = [];
 
@@ -132,20 +148,6 @@ const hpCounter = [
 'https://twemoji.maxcdn.com/v/latest/svg/38-20e3.svg',
 'https://twemoji.maxcdn.com/v/latest/svg/39-20e3.svg',
 'https://twemoji.maxcdn.com/v/latest/svg/1f51f.svg'];
-
-let extension = ".svg";
-let path = "latest/";
-let tweSrc = "https://twemoji.maxcdn.com/v/latest/";
-if(navigator.userAgent.indexOf("Firefox")){
-    extension = ".png";
-    path = "72x72/"
-    tweSrc = "https://twemoji.maxcdn.com/v/latest/"
-}
-
-
-function genSrc(icon){
-    return `${tweSrc}${path}${icon}${extension}`
-}
 
 const gameObj = {
     rock:{
@@ -264,15 +266,14 @@ function renderCanvasObj(itemArray){
                     ctx.rotate(-((item.r*Math.PI)/180));
                     ctx.translate(-item.x,-item.y);
                 }
-                // console.log('Rotate Me!');
             }else{
                 ctx.drawImage(gameObj[item.name].image,item.x,item.y,gameObj[item.name].h,gameObj[item.name].w);
             }
         });
 }
 
-function toggleDOM(what){
-    document.getElementById(what).classList.toggle('hide');
+function toggleDOM(element){
+    document.getElementById(element).classList.toggle('hide');
 }
 
 function displayHP(hp){
@@ -292,7 +293,7 @@ function displayScore(score){
 }
 
 function updateCenterText(text){
-document.getElementById('center-screen').textContent = text;
+    document.getElementById('center-screen').textContent = text;
 }
 
 function gameOver(){
@@ -300,8 +301,9 @@ function gameOver(){
         {name:'sad',x:200,y:200,r:0},
     ];
     updateCenterText('Game Over');
-    toggleDOM('start-button');
-    gameState = -1;    
+    document.getElementById('start-button').innerText = 'Try Again';
+    document.getElementById('start-button').classList.remove('hide');
+    gameState = -1;
 }
 
 function loadGame(){
@@ -313,50 +315,49 @@ function loadGame(){
             // console.log(`${obj} loaded`);
         }
     }
-    document.querySelector('.buttons').style.display = 'unset';
+    document.getElementById('start-button').classList.remove('hide');
     updateCenterText('Press Start to play');
     document.getElementById('loading').src = "./img/wait.svg";
 }
 
 function clickEvents(x,y){
     let choice = -1;
-    
-    if(y > 200 && y < 340){     // if( (y-200)*(y-340) <= 0){
-        console.log('Top Row');
-        choice = 3;
-    }
     if(y > 350 && y < 450){
-        if(x > 50 && x < 150){
-            //icon 1
+        if(x > 50 && x < 150)
             choice = 0;
-            console.log('rock');
-        }else if( x > 200 && x < 300){
-            //icon 2
+        else if( x > 200 && x < 300)
             choice = 1;
-            console.log('paper');
-        }else if ( x > 350 && x < 450){
-            //icon 3
+        else if ( x > 350 && x < 450)
             choice = 2;
-            console.log('scissors');
-        }
     }
-console.log(choice);
-getClick(choice);
+    if(y > 200 && y < 340){
+        if(x > 50 && x < 150)
+            choice = 3;
+        else if( x > 200 && x < 300)
+            choice = 4;
+        else if ( x > 350 && x < 450)
+            choice = 5;
+    }
+    getClick(choice);
 }
 
 function getClick(opt){
     if(opt < 0 ) { return -1; }
-    console.log(`Game state # ${gameState}`);
-    if(gameState === 1 && opt < 3){
+    // console.log(`Game state # ${gameState}`);
+    if(gameState === 0){
+        human.chooseIcon(opt);
+        gameStart();
+        toggleDOM('health');
+        toggleDOM('score');      
+    }else if(gameState == 2 && opt < 3){
         human.attack(opt);
         animationID = setInterval(animation,752);
-        gameState = 2;
-    }else if(gameState === 2){
-        gameEnd();
         gameState = 3;
-        return true;
-    }else if(gameState === 3){
-        begin3();
+    }else if(gameState == 3){
+        gameEnd();
+        gameState = 4;
+    }else if(gameState == 4){
+        gameStart();
     }
 }
 
@@ -369,15 +370,39 @@ function updateGameArea(){
     //check for game over or in displayHP?
 }
 
-function begin3(){
+function charSelect(){
+    updateCenterText('Choose your player: ');    
+    gameArea[frame] = [];
+    let order = 1;
+    x = 50;
+    y = 350;
+    playerIcons.forEach(icon =>{
+        if(order <= 3){
+            gameArea[frame].push( {name:`${icon}`,x,y,r:0},);  
+        }else{     
+            gameArea[frame].push( {name:`${icon}`,x,y,r:0},);      
+        }
+        x+=150;
+        if(order % 3 == 0){
+            y = y - 150;
+            x = 50;
+        }        
+        order++;        
+    });
+    playSpace.start();
+    toggleDOM('loading');
+}
+
+function gameStart(){
     gameArea[frame] = [
+        {name:`${human.icon}`,x:200,y:200,r:0},
         {name:'rock',x:50,y:350,r:0},
         {name:'paper',x:200,y:350,r:0},
         {name:'scissors',x:350,y:350,r:0}];        
-    playSpace.start();
+    // playSpace.start();
     updateCenterText('Pick your move: ');
     toggleDOM('start-button');
-    gameState = 1;
+    gameState = 2;
 }
 
 function gameEnd(){
@@ -397,7 +422,7 @@ function gameEnd(){
         {name:`${playerIcon}`,x:50,y:350,r:0},
     ];
     document.getElementById('start-button').innerText = 'Play Again'; 
-    gameState = 4;
+    gameState = 5;
     frame++;
 }
 
