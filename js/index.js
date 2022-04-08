@@ -1,11 +1,13 @@
 class Player {
-    
     constructor(icon){
         this.player = 1;
         this.action = 0;
         this.health = 10;
         this.score = 0;
         this.icon = icon;
+        this.enemy = "tiger";
+        this.lastRound;
+        this.round = [];
     }
 
     attack(attack){
@@ -13,98 +15,94 @@ class Player {
     }
 
     battle(){
-        let huMove = this.action; // 0-2
-        this.aiMove = this.enemyAttack(); //0-2
+        let huMove = this.action; 
+        this.aiMove = this.enemyAttack(); 
         // 0 = rock 1 = paper 2 = scissors
-        // console.log(`User chose ${actions[huMove]}...`);
-        // console.log(`AI chose ${actions[this.aiMove]}...`);
-        if( ((huMove + 1) % 3) === this.aiMove  ){
-            this.health--;
-            // console.log('AI Wins!');
-            return -1;                
-        }else if(huMove === this.aiMove ){
-            // console.log('Tie!');
-            return 0;                
-        }else{
-            // console.log('Player Wins!');
-            return 1;                
+        if( ((huMove + 1) % 3) === this.aiMove ){ //L
+            this.lastRound = -1;
+        }else if(huMove === this.aiMove ){ //T
+            this.lastRound = 0;
+        }else{ //W
+            this.lastRound = 1; 
         }
+        return this.lastRound;
     }
+
     enemyAttack(){
         return Math.floor(Math.random() * 3);
     }
+
+    roundResult(){
+        let text;
+        if(this.lastRound === undefined){
+            return "You haven't played yet!";
+        }
+        if(this.lastRound<0){
+            text = `${this.enemy} won`;
+            this.health--;
+        }else if(this.lastRound>0){
+            text = `You won!`;
+            this.score+=10;
+        }else{
+            text = `Tie`;
+        }
+        return text;        
+    }
+
     gameWon(){
         this.score+=10;
     }
 }
 
 window.onload = () => {
-document.getElementById('start-button').onclick = () => {
-    if(frame===2){
-        drawSecondFrame();
-        frame = 3;
+    loadGame();
+
+    document.getElementById('start-button').onclick = () => {
+    if(gameState===2){
+        gameEnd();
+        gameState = 3;        
         return true;
     }else{
-    begin();
+    begin3();
     toggleDOM('loading','none');
     toggleDOM('health','unset');
     toggleDOM('score','unset');
-    displayHP(human.health);
+    // displayHP(human.health);
     toggleDOM('points','unset',0);
-    displayScore(human.score);
+    // displayScore(human.score);
     }        
-};
-document.getElementById('fwd-button').onclick = () => {
-    displayScore();
-};    
-document.getElementById('back-button').onclick = () => {
-    toggleDOM('health','none');
-    displayHP();
-};
-document.querySelector('#canvas').addEventListener("mousedown", function(e)
-{
-    getMousePosition(myCanvas, e);
-});    
-let toggle = 0;
-document.addEventListener('keydown', function(event) {
-    const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
-    if(key === "ArrowRight"){
-        console.log(toggle);
-        let body = document.querySelector('body');
-        if(toggle === 1){
-            body.style.background = "url('./img/bg-sb2.svg')";                
-            body.style.backgroundRepeat = "norepeat";
-            body.style.backgroundSize = "100%";                
-        }else if(toggle === 2){
-            body.style.background = "url('./img/bg3.svg')";                
-            body.style.backgroundRepeat = "norepeat";
-            body.style.backgroundSize = "100%";                
-        }else if(toggle === 3){
-            body.style.background = "url('./img/bg-spiral.svg')";                
-            body.style.backgroundRepeat = "norepeat";
-            body.style.backgroundSize = "100%";                
-        }else if(toggle === 4){
-            body.style.background = "url('./img/background.svg')";
-            body.style.backgroundRepeat = "repeat";
-            body.style.backgroundSize = "20%";
-        }else{
-            body.style.background = "unset";                
-            body.style.backgroundColor = "black";                    
-        }
-        toggle++;            
-    }
-});
+    };
+    document.getElementById('fwd-button').onclick = () => {
+        displayScore();
+    };    
+    document.getElementById('back-button').onclick = () => {
+        toggleDOM('health','none');
+        displayHP();
+    };
+    document.querySelector('#canvas').addEventListener("mousedown", function(e)
+    {
+        getMousePosition(myCanvas, e);
+    });    
 
-assetPreloader();
 };
+
+function getMousePosition(canvas, event) {
+    let rect = canvas.getBoundingClientRect();
+    let x = event.clientX - rect.left;
+    let y = event.clientY - rect.top;
+    clickEvents(x,y);
+    console.log("Coordinate x: " + x, 
+                "Coordinate y: " + y);
+    }
 
 /*
 Constants
 */
 
+let gameState = 0;
 let frame = 0;
 
-let countdown = '';
+let animationID;
 
 const actions = ['rock','paper','scissors','shoot'];
 const human = new Player('panda');
@@ -112,42 +110,20 @@ const human = new Player('panda');
 const myCanvas = document.querySelector('#canvas');
 const ctx = myCanvas.getContext('2d');
 
-const playerIcons = [
-'https://twemoji.maxcdn.com/v/latest/svg/1f99d.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/1f42f.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/1f435.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/1f43c.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/1f43a.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/1f423.svg',
-];
+const playSpace = {
+    canvas: myCanvas,
+    context: ctx,
+    start: function () {
+        this.interval = setInterval(updateGameArea,750);
+    },
+    clear: function(){
+        ctx.clearRect(0,0,500,500);
+    },
+    }
 
 const players = ['chick','tiger','monkey','panda','racoon','wolf'];
 
-const gameAssets = { 
-rock:      { src:'https://twemoji.maxcdn.com/v/latest/svg/1faa8.svg', loaded:false}, 
-paper:     { src:'https://twemoji.maxcdn.com/v/latest/svg/1f4c3.svg',  loaded:false}, 
-scissors:  { src:'https://twemoji.maxcdn.com/v/latest/svg/2702.svg',   loaded:false}, 
-lHand:     { src:'https://twemoji.maxcdn.com/v/latest/svg/1f91c.svg',  loaded:false},
-rHand:     { src:'https://twemoji.maxcdn.com/v/latest/svg/1f91b.svg',  loaded:false},
-background:{ src:'./img/background.svg',  loaded:false},
-spiralbg:  { src:'./img/bg-spiral.svg', loaded: false},
-swords:    { src:'https://twemoji.maxcdn.com/v/latest/svg/2694.svg',  loaded:false},
-bubble:    { src:'https://twemoji.maxcdn.com/v/latest/svg/1f5e8.svg', loaded:false},
-bubbleleft:{ src:'./img/bubble-left.svg', loaded:false},    
-swirl:     { src:'https://twemoji.maxcdn.com/v/latest/svg/1f365.svg', loaded:false},
-chick:     { src:'https://twemoji.maxcdn.com/v/latest/svg/1f423.svg', loaded:false},
-tiger:     { src:'https://twemoji.maxcdn.com/v/latest/svg/1f42f.svg', loaded:false},
-monkey:    { src:'https://twemoji.maxcdn.com/v/latest/svg/1f435.svg', loaded:false},
-panda:     { src:'https://twemoji.maxcdn.com/v/latest/svg/1f43c.svg', loaded:false},
-racoon:    { src:'https://twemoji.maxcdn.com/v/latest/svg/1f99d.svg', loaded:false},
-wolf:      { src:'https://twemoji.maxcdn.com/v/latest/svg/1f43a.svg', loaded:false},
-rockH:     { src:'https://twemoji.maxcdn.com/v/latest/svg/270a.svg', loaded:false},
-paperH:    { src:'https://twemoji.maxcdn.com/v/latest/svg/1f91a.svg', loaded:false},
-scissorsH: { src:'https://twemoji.maxcdn.com/v/latest/svg/270c.svg', loaded:false},
-happy:     { src:'https://twemoji.maxcdn.com/v/latest/svg/1f973.svg', loaded: false},
-sad:       { src:'https://twemoji.maxcdn.com/v/latest/svg/1f614.svg', loaded: false},
-heartH:     { src:'https://twemoji.maxcdn.com/v/latest/svg/1faf6.svg', loaded: false},
-};
+const gameArea = [];
 
 const hpCounter = [
 'https://twemoji.maxcdn.com/v/latest/svg/30-20e3.svg',
@@ -162,22 +138,141 @@ const hpCounter = [
 'https://twemoji.maxcdn.com/v/latest/svg/39-20e3.svg',
 'https://twemoji.maxcdn.com/v/latest/svg/1f51f.svg'];
 
-function getMousePosition(canvas, event) {
-let rect = canvas.getBoundingClientRect();
-let x = event.clientX - rect.left;
-let y = event.clientY - rect.top;
-clickEvents(x,y);
-console.log("Coordinate x: " + x, 
-            "Coordinate y: " + y);
+let extension = ".svg";
+let path = "latest/";
+let tweSrc = "https://twemoji.maxcdn.com/v/latest/";
+if(navigator.userAgent.indexOf("Firefox")){
+    extension = ".png";
+    path = "72x72/"
+    tweSrc = "https://twemoji.maxcdn.com/v/latest/"
+}
+
+
+function genSrc(icon){
+    return `${tweSrc}${path}${icon}${extension}`
+}
+
+const gameObj = {
+    rock:{
+        icon: '1faa8',
+        src: function(){return genSrc(this.icon)},
+       loaded: false, h: 100, w: 100,},
+    paper: { 
+        icon: '1f4c3',
+        src: function(){return genSrc(this.icon)},
+        loaded: false, h: 100, w: 100,},
+    scissors: {
+        icon: '2702',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,},
+    lhand: {
+        icon: '1f91c',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,},
+    palm: {
+        icon: '1f590',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,},        
+    rhand: {
+        icon: '1f91b',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,        
+    },
+    swords: {
+        icon: '2694',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,        
+    },
+    bubble: {
+        icon: '1f5e8',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 200, w: 200,        
+    },
+    lbubble: {  // !!! REMOVE THIS !!!
+        src: function() {return'./img/bubble-left.svg'},
+        loaded: false, h: 200, w: 200,        
+    },
+    tiger: {
+        icon: '1f42f',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,        
+    },
+    rockh: {
+        icon: '270a',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,        
+    },
+    paperh: {
+        icon: '1f91a',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,        
+    },            
+    scissorsh: {
+        icon: '270c',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,        
+    },
+    racoon: {
+        icon: '1f99d',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,        
+    },
+    panda: {
+        icon: '1f43c',
+        src: function(){return genSrc(this.icon)},
+        loaded: false, h: 100, w: 100,        
+    }, 
+    sad: {
+        icon: '1f614',
+        src: function(){return genSrc(this.icon)},        
+        loaded: false, h: 100, w: 100,
+    },
+    speech: {
+        icon: '1f4ac',
+        src: function(){return genSrc(this.icon)},
+        loaded: false, h: 100, w: 100, 
+    }, 
+    }
+
+// replace the inner-logic for
+// flips and rotations? Not necessary...
+function xform(deg,flip){
+    ctx.save();
+    if(flip){
+        ctx.scale(-1,1);
+    }
+    ctx.restore();
+}
+
+function renderCanvasObj(itemArray){
+    ctx.clearRect(0,0,500,500);
+        itemArray.forEach(item => {
+            if(item.r){
+                if(item.r == 360){
+                    ctx.scale(-1,1);
+                    ctx.drawImage(gameObj[item.name].image,-item.x,item.y,gameObj[item.name].h,gameObj[item.name].w);
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                }else{
+                    ctx.translate(item.x,item.y);
+                    ctx.rotate(((item.r*Math.PI)/180));
+                    ctx.drawImage(gameObj[item.name].image,0,0,gameObj[item.name].h,gameObj[item.name].w);
+                    ctx.rotate(-((item.r*Math.PI)/180));
+                    ctx.translate(-item.x,-item.y);
+                }
+                // console.log('Rotate Me!');
+            }else{
+                ctx.drawImage(gameObj[item.name].image,item.x,item.y,gameObj[item.name].h,gameObj[item.name].w);
+            }
+        });
 }
 
 // thing = DOM element by id
 // toggle = 'none' or 'unset'
 // value = text/element to display
-function toggleDOM(thing,toggle,value){
-document.getElementById(thing).style.display = toggle;
+function toggleDOM(what,toggle,value){
+document.getElementById(what).style.display = toggle;
 if (value !== undefined){
-    document.getElementById(thing).innerHTML = value;
+    document.getElementById(what).innerHTML = value;
 }
 }
 
@@ -203,20 +298,18 @@ function updateCenterText(text){
 document.getElementById('center-screen').textContent = text;
 }
 
-
-function assetPreloader(){
-for (const asset in gameAssets) {
-    gameAssets[asset].image = new Image();
-    gameAssets[asset].image.src = gameAssets[asset].src;
-    gameAssets[asset].image.onload = function() {
-        gameAssets[asset].loaded = true;
-        // console.log(`${asset} loaded`);
+function loadGame(){
+    for (const obj in gameObj) {
+        gameObj[obj].image = new Image();
+        gameObj[obj].image.src = gameObj[obj].src();
+        gameObj[obj].image.onload = function() {
+            gameObj[obj].loaded = true;
+            // console.log(`${obj} loaded`);
+        }
     }
-}
-
-document.querySelector('.buttons').style.display = 'unset';
-updateCenterText('Press Start to play');
-document.getElementById('loading').src = "./img/wait.svg";
+    document.querySelector('.buttons').style.display = 'unset';
+    updateCenterText('Press Start to play');
+    document.getElementById('loading').src = "./img/wait.svg";
 }
 
 function clickEvents(x,y){
@@ -242,142 +335,106 @@ if(y > 350 && y < 450){
     }
 }
 console.log(choice);
-makeChoice(choice);
+getClick(choice);
 }
 
-function makeChoice(opt){
-if(opt < 0 ) { return -1; }
-console.log(`Frame # ${frame}`);
-if(frame === 1 && opt < 3){
-    human.attack(opt);
-    // drawFirstFrame();
-    countdown = setInterval(animateRPS,1000);        
-    frame = 2;
-    return true;
-}else if(frame === 2){
-    drawSecondFrame();
-    frame = 3;
-    return true;
-}else if(frame === 3){
-    begin();
-}
-}
-
-function begin(){
-ctx.clearRect(0,0,500,500);
-const ptrn = ctx.createPattern(gameAssets['background'].image, 'repeat');
-ctx.fillStyle = ptrn;
-// ctx.fillRect(0, 0, myCanvas.width, myCanvas.height);   
-ctx.drawImage(gameAssets['rock'].image,50,350,100,100); 
-ctx.drawImage(gameAssets['paper'].image,200,350,100,100);
-ctx.drawImage(gameAssets['scissors'].image,350,350,100,100);
-updateCenterText('Pick your move: ');
-document.getElementById('start-button').innerText = 'Start';     
-frame = 1;
-}
-
-
-function drawFirstFrame(){
-let option = human.action;
-console.log(option);
-ctx.clearRect(0,0,500,500);
-
-const ptrn = ctx.createPattern(gameAssets['background'].image, 'repeat');
-ctx.fillStyle = ptrn;
-// ctx.fillRect(0, 0, myCanvas.width, myCanvas.height);    
-
-ctx.drawImage(gameAssets[actions[option]].image,200,350,100,100);
-// ctx.drawImage(gameAssets[actions[option]+"H"].image,350,350,100,100);
-ctx.drawImage(gameAssets[human.icon].image,50,350,100,100); 
-ctx.drawImage(gameAssets['tiger'].image,350,350,100,100);    
-
-
-updateCenterText(`Shoot!`);
-// ctx.drawImage(gameAssets['swirl'].image,155,155,200,200);        
-ctx.drawImage(gameAssets['bubbleleft'].image,50,150,200,200);
-ctx.drawImage(gameAssets['bubble'].image,255,150,200,200);        
-ctx.drawImage(gameAssets['lHand'].image,100,200,100,100);
-ctx.drawImage(gameAssets['swords'].image,200,185,100,100);    
-ctx.drawImage(gameAssets['rHand'].image,300,200,100,100);
-document.getElementById('start-button').innerText = 'Shoot';
-}
-
-function gameOver(){
-    ctx.clearRect(0,0,500,500);
-    updateCenterText('Game Over');
-    ctx.drawImage(gameAssets['sad'].image,200,200,100,100);    
-}
-
-function drawSecondFrame(){
-ctx.clearRect(0,0,500,500);
-
-const ptrn = ctx.createPattern(gameAssets['background'].image, 'repeat');
-ctx.fillStyle = ptrn;
-// ctx.fillRect(0, 0, myCanvas.width, myCanvas.height);   
-
-let result = human.battle();
-let playerMove = human.action;
-let oppoMove = human.aiMove;
-
-if(result === -1 ){
-    updateCenterText(`Opponent won`);
-    displayHP(human.health);
-}else if(result === 0){
-    updateCenterText(`Tie`);
-
-}else if(result === 1){
-    updateCenterText(`You won!`);
-    human.gameWon();
-    displayScore(human.score);
-}
-
-ctx.drawImage(gameAssets[actions[oppoMove]].image,200,200,100,100);
-ctx.drawImage(gameAssets[actions[oppoMove]+"H"].image,50,200,100,100);
-ctx.drawImage(gameAssets['tiger'].image,350,200,100,100);    
-
-ctx.drawImage(gameAssets[actions[playerMove]].image,200,350,100,100);   
-ctx.drawImage(gameAssets[actions[playerMove]+"H"].image,350,350,100,100);
-ctx.drawImage(gameAssets[human.icon].image,50,350,100,100);         
-document.getElementById('start-button').innerText = 'Play Again'; 
-frame = 4;
-}
-
-//
-// let testThing = setInterval(rotate,300);
-let n = 10;
-function animate(){
-ctx.clearRect(0,0,500,500);
-ctx.drawImage(gameAssets['spiralbg'].image,n,0,500,500)   
-n++;
-}
-
-let x=100;
-
-x = 0;
-// let tagLines = ['Rock...','Paper...','Scissors'];
-function animateRPS(){
-if(x <=2){
-    ctx.clearRect(0,0,500,500);
-    console.log(x);
-
-    if(x%2){ 
-        ctx.drawImage(gameAssets['bubbleleft'].image,155,150,200,200); 
-        ctx.drawImage(gameAssets[human.icon].image,50,350,100,100); 
+function getClick(opt){
+    if(opt < 0 ) { return -1; }
+    console.log(`Game state # ${gameState}`);
+    if(gameState === 1 && opt < 3){
+        human.attack(opt);
+        animationID = setInterval(animation,751);
+        gameState = 2;
+    }else if(gameState === 2){
+        gameEnd();
+        gameState = 3;
+        return true;
+    }else if(gameState === 3){
+        begin3();
     }
-    
-    else {
-        ctx.drawImage(gameAssets['bubble'].image,155,150,200,200); 
-        ctx.drawImage(gameAssets['tiger'].image,350,350,100,100);                
-    } 
-    
-    ctx.drawImage(gameAssets[actions[x]].image,200,200,100,100);
-    
-    document.getElementById('center-screen').textContent = `${actions[x]} ...`
-    x++;
-}else{
-    x = 0;
-    drawFirstFrame();
-    clearInterval(countdown);
-}            
-// if(x === 3){x++;}else{x++}
+}
+
+function updateGameArea(){
+    playSpace.clear();
+    // console.log(frame);
+    renderCanvasObj(gameArea[frame]);
+    displayHP(human.health);
+    displayScore(human.score);
+    //check for game over or in displayHP?
+}
+
+function begin3(){
+    gameArea[frame] = [
+        {name:'rock',x:50,y:350,r:0},
+        {name:'paper',x:200,y:350,r:0},
+        {name:'scissors',x:350,y:350,r:0}];        
+    playSpace.start();
+    updateCenterText('Pick your move: ');
+    gameState = 1;
+}
+
+function gameEnd(){
+    let outcome = human.battle();
+    let playerMove = actions[human.action];
+    let aiMove = actions[human.aiMove];
+    let enemyIcon = human.enemy;
+    let playerIcon = human.icon;
+    updateCenterText(human.roundResult());
+    gameArea[frame+1] = [
+        {name:`${aiMove}`,x:200,y:200,r:0},
+        {name:`${aiMove}h`,x:50,y:200,r:0},
+        {name:`${enemyIcon}`,x:350,y:200,r:0},                
+        {name:`${playerMove}`,x:200,y:350,r:0},
+        {name:`${playerMove}h`,x:350,y:350,r:0},
+        {name:`${playerIcon}`,x:50,y:350,r:0},
+    ];
+    document.getElementById('start-button').innerText = 'Play Again'; 
+    gameState = 4;
+    frame++;
+}
+
+let l = 0;
+function animation(){
+    if( l == 0 ){
+        gameArea[frame+1] = [
+            {name:'bubble',x:350,y:150,r:360},
+            {name:human.icon,x:50,y:350,r:0},
+            {name:actions[l],x:200,y:200,r:0},
+        ];
+        updateCenterText(`${actions[l]}...`);
+        frame++;
+        l++;        
+    }else if( l == 1 ){
+        gameArea[frame+1] = [
+            {name:'bubble',x:155,y:150,r:0},    
+            {name:`${human.enemy}`,x:350,y:350,r:0},
+            {name:`${actions[l]}`,x:200,y:200,r:0},
+        ];        
+        updateCenterText(`${actions[l]}...`);
+        frame++;
+        l++;
+    }else if( l == 2 ){
+        gameArea[frame+1] = [
+            {name:'bubble',x:350,y:150,r:360},
+            {name:human.icon,x:50,y:350,r:0},
+            {name:actions[l],x:200,y:200,r:0},
+        ]; 
+        updateCenterText(`${actions[l]}...`);
+        frame++;
+        l++
+    }else{
+        gameArea[frame+1] = [
+            {name:'speech',x:350,y:250,r:360},
+            {name:'speech',x:150,y:250,r:0},
+            {name:human.icon,x:50,y:350,r:0},
+            {name:`${human.enemy}`,x:350,y:350,r:0},
+            {name:'palm',x:200,y:360,r:0},
+            {name:'lhand',x:200,y:490,r:270},
+        ]; 
+        updateCenterText(`${actions[l]}!`);
+        document.getElementById('start-button').innerText = 'Shoot';
+        frame++;
+        l = 0;
+        clearInterval(animationID);
+    }
 }
