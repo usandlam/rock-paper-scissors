@@ -347,7 +347,7 @@ function gameStart(){
     // playSpace.start();
     updateCenterText('Pick your move: ');
     toggleDOM('start-button');
-    gameState = 3;
+    gameState = 2;
 }
 
 function gameEnd(){
