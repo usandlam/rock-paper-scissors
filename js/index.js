@@ -9,8 +9,12 @@ class Player {
         this.round = [];
     }
 
-    chooseIcon(opt){
-        this.icon = playerIcons[opt];
+    chooseIcon(choice,who){
+        //this.enemy
+        //this.icon
+        //playerIcons
+        //enemyIcons
+        this.icon = playerIcons[choice];
     }
 
     attack(attack){
@@ -54,6 +58,8 @@ class Player {
 }
 
 window.onload = () => {
+
+    twemoji.forEach(asset => buildGameObj(asset.label,asset.code));
     loadGame();
 
     document.getElementById('start-button').onclick = () => {
@@ -90,19 +96,19 @@ function getMousePosition(canvas, event) {
     // console.log("Coordinate x: " + x, 
     //             "Coordinate y: " + y);
     }
-/*
+
+    /*
 Firefox SVG Bug Fix
 */
-let extension = ".svg";
-let path = "latest/";
-let tweSrc = "https://twemoji.maxcdn.com/v/latest/";
-if(navigator.userAgent.indexOf("Firefox")){
-    extension = ".png";
-    path = "72x72/"
-    tweSrc = "https://twemoji.maxcdn.com/v/latest/"
-}
-
-function genSrc(icon){
+function genSrc(icon,canvas){
+    let extension = ".svg";
+    let path = "latest/svg/";
+    let tweSrc = "https://twemoji.maxcdn.com/v/";
+    if(navigator.userAgent.indexOf("Firefox") && canvas){
+        extension = ".png";
+        path = "72x72/"
+        tweSrc = "https://twemoji.maxcdn.com/v/latest/"
+    }
     return `${tweSrc}${path}${icon}${extension}`
 }
 /*
@@ -132,120 +138,41 @@ const playSpace = {
 }
 
 const playerIcons = ['chick','deer','monkey','panda','racoon','wolf'];
-const enemyIcons = ['chick','deer','monkey','panda','racoon','wolf'];
+const enemyIcons = ['bear','lion','owl','frog','sloth','dog'];
 
 const gameArea = [];
 
 const hpCounter = [
-'https://twemoji.maxcdn.com/v/latest/svg/30-20e3.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/31-20e3.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/32-20e3.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/33-20e3.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/34-20e3.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/35-20e3.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/36-20e3.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/37-20e3.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/38-20e3.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/39-20e3.svg',
-'https://twemoji.maxcdn.com/v/latest/svg/1f51f.svg'];
+    genSrc('30-20e3',false),
+    genSrc('31-20e3',false),
+    genSrc('32-20e3',false),
+    genSrc('33-20e3',false),
+    genSrc('34-20e3',false),
+    genSrc('35-20e3',false),
+    genSrc('36-20e3',false),
+    genSrc('37-20e3',false),
+    genSrc('38-20e3',false),
+    genSrc('39-20e3',false),
+    genSrc('1f51f',false)];
+    
+const gameObj = {};
+function buildGameObj(name,codePoint){
+    gameObj[name] = {
+        codePoint,
+        src: function(){return genSrc(this.codePoint,true)},
+       loaded: false, h: 100, w: 100};
+}
 
-const gameObj = {
-    rock:{
-        icon: '1faa8',
-        src: function(){return genSrc(this.icon)},
-       loaded: false, h: 100, w: 100,},
-    paper: { 
-        icon: '1f4c3',
-        src: function(){return genSrc(this.icon)},
-        loaded: false, h: 100, w: 100,},
-    scissors: {
-        icon: '2702',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,},
-    lhand: {
-        icon: '1f91c',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,},
-    palm: {
-        icon: '1f590',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,},        
-    rhand: {
-        icon: '1f91b',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,        
-    },
-    swords: {
-        icon: '2694',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,        
-    },
-    bubble: {
-        icon: '1f5e8',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 200, w: 200,        
-    },
-    tiger: {
-        icon: '1f42f',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,        
-    },
-    rockh: {
-        icon: '270a',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,        
-    },
-    paperh: {
-        icon: '1f91a',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,        
-    },            
-    scissorsh: {
-        icon: '270c',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,        
-    },
-    racoon: {
-        icon: '1f99d',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,        
-    },
-    panda: {
-        icon: '1f43c',
-        src: function(){return genSrc(this.icon)},
-        loaded: false, h: 100, w: 100,        
-    }, 
-    sad: {
-        icon: '1f614',
-        src: function(){return genSrc(this.icon)},        
-        loaded: false, h: 100, w: 100,
-    },
-    speech: {
-        icon: '1f4ac',
-        src: function(){return genSrc(this.icon)},
-        loaded: false, h: 100, w: 100, 
-    }, 
-    chick: {
-        icon: '1f423',
-        src: function(){return genSrc(this.icon)},
-        loaded: false, h: 100, w: 100, 
-    }, 
-    deer: {
-        icon: '1f98c',
-        src: function(){return genSrc(this.icon)},
-        loaded: false, h: 100, w: 100, 
-    },
-    monkey: {
-        icon: '1f435',
-        src: function(){return genSrc(this.icon)},
-        loaded: false, h: 100, w: 100, 
-    }, 
-    wolf: {
-        icon: '1f43a',
-        src: function(){return genSrc(this.icon)},
-        loaded: false, h: 100, w: 100, 
-    },               
-    }
+let twemoji = [
+    {label:'rock',code:'1faa8'},{label:'paper',code:'1f4c3'},{label:'scissors',code:'2702'},
+    {label:'lhand',code:'1f91c'},{label:'palm',code:'1f590'},{label:'rhand',code:'1f91b'},
+    {label:'swords',code:'2694'},{label:'bubble',code:'1f5e8'},{label:'tiger',code:'1f42f'},
+    {label:'rockh',code:'270a'},{label:'paperh',code:'1f91a'},{label:'scissorsh',code:'270c'},
+    {label:'racoon',code:'1f99d'},{label:'panda',code:'1f43c'},{label:'sad',code:'1f614'},
+    {label:'speech',code:'1f4ac'},{label:'chick',code:'1f423'},{label:'deer',code:'1f98c'},
+    {label:'monkey',code:'1f435'},{label:'wolf',code:'1f43a'},{label:'sloth',code:'1f9a5'},
+    {label:'bear',code:'1f43b'},{label:'owl',code:'1f989'},{label:'frog',code:'1f438'},{label:'dog',code:'1f436'}
+];
 
 function renderCanvasObj(itemArray){
     ctx.clearRect(0,0,500,500);
@@ -366,6 +293,30 @@ function updateGameArea(){
     //check for game over or in displayHP?
 }
 
+function iconSelect(iconArray){
+
+    gameArea[frame] = [];
+    let order = 1;
+    x = 50;
+    y = 350;
+    iconArray.forEach(icon =>{
+        if(order <= 3){
+            gameArea[frame].push( {name:`${icon}`,x,y,r:0},);  
+        }else{     
+            gameArea[frame].push( {name:`${icon}`,x,y,r:0},);      
+        }
+        x+=150;
+        if(order % 3 == 0){
+            y = y - 150;
+            x = 50;
+        }        
+        order++;        
+    });
+    playSpace.start();
+    toggleDOM('loading');
+
+}
+
 function charSelect(){
     updateCenterText('Choose your player: ');    
     gameArea[frame] = [];
@@ -424,6 +375,10 @@ function gameEnd(){
 
 let l = 0;
 function animation(){
+    //blow up the bubbles
+    gameObj['bubble'].w = 200;
+    gameObj['bubble'].h = 200;
+
     if( l == 0 ){
         gameArea[frame+1] = [
             {name:'bubble',x:350,y:150,r:360},
