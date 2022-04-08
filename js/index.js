@@ -185,10 +185,6 @@ const gameObj = {
         src: function(){return genSrc(this.icon)},        
         loaded: false, h: 200, w: 200,        
     },
-    lbubble: {  // !!! REMOVE THIS !!!
-        src: function() {return'./img/bubble-left.svg'},
-        loaded: false, h: 200, w: 200,        
-    },
     tiger: {
         icon: '1f42f',
         src: function(){return genSrc(this.icon)},        
