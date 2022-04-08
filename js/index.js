@@ -1,13 +1,16 @@
 class Player {
-    constructor(icon){
-        this.player = 1;
+    constructor(){
         this.action = 0;
         this.health = 10;
         this.score = 0;
-        this.icon = icon;
+        this.icon = 'panda';
         this.enemy = "tiger";
         this.lastRound;
         this.round = [];
+    }
+
+    chooseIcon(icon){
+        this.icon = icon;
     }
 
     attack(attack){
@@ -58,32 +61,24 @@ window.onload = () => {
     loadGame();
 
     document.getElementById('start-button').onclick = () => {
-    if(gameState===2){
-        gameEnd();
-        gameState = 3;        
-        return true;
-    }else{
-    begin3();
-    toggleDOM('loading','none');
-    toggleDOM('health','unset');
-    toggleDOM('score','unset');
-    // displayHP(human.health);
-    toggleDOM('points','unset',0);
-    // displayScore(human.score);
-    }        
+        if( gameState == 2 ){
+            gameEnd();
+            gameState = 3;        
+            return true;
+        } else if( gameState == 3 ){
+            begin3();
+        }else{
+            begin3();
+            toggleDOM('loading');
+            toggleDOM('health');
+            toggleDOM('score');
+        }
     };
-    document.getElementById('fwd-button').onclick = () => {
-        displayScore();
-    };    
-    document.getElementById('back-button').onclick = () => {
-        toggleDOM('health','none');
-        displayHP();
-    };
+
     document.querySelector('#canvas').addEventListener("mousedown", function(e)
     {
         getMousePosition(myCanvas, e);
-    });    
-
+    });
 };
 
 function getMousePosition(canvas, event) {
@@ -96,7 +91,7 @@ function getMousePosition(canvas, event) {
     }
 
 /*
-Constants
+Declarations
 */
 
 let gameState = 0;
@@ -105,7 +100,7 @@ let frame = 0;
 let animationID;
 
 const actions = ['rock','paper','scissors','shoot'];
-const human = new Player('panda');
+const human = new Player;
 
 const myCanvas = document.querySelector('#canvas');
 const ctx = myCanvas.getContext('2d');
@@ -119,9 +114,9 @@ const playSpace = {
     clear: function(){
         ctx.clearRect(0,0,500,500);
     },
-    }
+}
 
-const players = ['chick','tiger','monkey','panda','racoon','wolf'];
+const players = ['chick','deer','monkey','panda','racoon','wolf'];
 
 const gameArea = [];
 
@@ -232,17 +227,27 @@ const gameObj = {
         src: function(){return genSrc(this.icon)},
         loaded: false, h: 100, w: 100, 
     }, 
+    chick: {
+        icon: '1f423',
+        src: function(){return genSrc(this.icon)},
+        loaded: false, h: 100, w: 100, 
+    }, 
+    deer: {
+        icon: '1f98c',
+        src: function(){return genSrc(this.icon)},
+        loaded: false, h: 100, w: 100, 
+    },
+    monkey: {
+        icon: '1f435',
+        src: function(){return genSrc(this.icon)},
+        loaded: false, h: 100, w: 100, 
+    }, 
+    wolf: {
+        icon: '1f43a',
+        src: function(){return genSrc(this.icon)},
+        loaded: false, h: 100, w: 100, 
+    },               
     }
-
-// replace the inner-logic for
-// flips and rotations? Not necessary...
-function xform(deg,flip){
-    ctx.save();
-    if(flip){
-        ctx.scale(-1,1);
-    }
-    ctx.restore();
-}
 
 function renderCanvasObj(itemArray){
     ctx.clearRect(0,0,500,500);
@@ -266,36 +271,37 @@ function renderCanvasObj(itemArray){
         });
 }
 
-// thing = DOM element by id
-// toggle = 'none' or 'unset'
-// value = text/element to display
-function toggleDOM(what,toggle,value){
-document.getElementById(what).style.display = toggle;
-if (value !== undefined){
-    document.getElementById(what).innerHTML = value;
-}
+function toggleDOM(what){
+    document.getElementById(what).classList.toggle('hide');
 }
 
 function displayHP(hp){
-healthImage = document.getElementById('hp-img');
-if(hp !== undefined){
-    healthImage.src = hpCounter[hp];
-}
+    healthImage = document.getElementById('hp-img');
+    if(hp !== undefined){
+        healthImage.src = hpCounter[hp];
+    }
+    if(hp === 0){
+        gameOver();
+    }
 }
 
 function displayScore(score){
-document.getElementById('score').style.display = 'unset';
-if(score !== undefined){
-    document.getElementById('points').textContent = score;
-}
-}
-
-function toggleLoading(){
-document.getElementById('loading').style.display = 'none';
+    if(score !== undefined){
+        document.getElementById('points').textContent = score;
+    }
 }
 
 function updateCenterText(text){
 document.getElementById('center-screen').textContent = text;
+}
+
+function gameOver(){
+    gameArea[frame] = [
+        {name:'sad',x:200,y:200,r:0},
+    ];
+    updateCenterText('Game Over');
+    toggleDOM('start-button');
+    gameState = -1;    
 }
 
 function loadGame(){
@@ -313,27 +319,27 @@ function loadGame(){
 }
 
 function clickEvents(x,y){
-let choice = -1;
-
-if(y > 200 && y < 340){
-    console.log('Top Row');
-    choice = 3;
-}
-if(y > 350 && y < 450){
-    if(x > 50 && x < 150){
-        //icon 1
-        choice = 0;
-        console.log('rock');
-    }else if( x > 200 && x < 300){
-        //icon 2
-        choice = 1;
-        console.log('paper');
-    }else if ( x > 350 && x < 450){
-        //icon 3
-        choice = 2;
-        console.log('scissors');
+    let choice = -1;
+    
+    if(y > 200 && y < 340){     // if( (y-200)*(y-340) <= 0){
+        console.log('Top Row');
+        choice = 3;
     }
-}
+    if(y > 350 && y < 450){
+        if(x > 50 && x < 150){
+            //icon 1
+            choice = 0;
+            console.log('rock');
+        }else if( x > 200 && x < 300){
+            //icon 2
+            choice = 1;
+            console.log('paper');
+        }else if ( x > 350 && x < 450){
+            //icon 3
+            choice = 2;
+            console.log('scissors');
+        }
+    }
 console.log(choice);
 getClick(choice);
 }
@@ -343,7 +349,7 @@ function getClick(opt){
     console.log(`Game state # ${gameState}`);
     if(gameState === 1 && opt < 3){
         human.attack(opt);
-        animationID = setInterval(animation,751);
+        animationID = setInterval(animation,752);
         gameState = 2;
     }else if(gameState === 2){
         gameEnd();
@@ -370,6 +376,7 @@ function begin3(){
         {name:'scissors',x:350,y:350,r:0}];        
     playSpace.start();
     updateCenterText('Pick your move: ');
+    toggleDOM('start-button');
     gameState = 1;
 }
 
@@ -381,11 +388,12 @@ function gameEnd(){
     let playerIcon = human.icon;
     updateCenterText(human.roundResult());
     gameArea[frame+1] = [
-        {name:`${aiMove}`,x:200,y:200,r:0},
-        {name:`${aiMove}h`,x:50,y:200,r:0},
-        {name:`${enemyIcon}`,x:350,y:200,r:0},                
-        {name:`${playerMove}`,x:200,y:350,r:0},
-        {name:`${playerMove}h`,x:350,y:350,r:0},
+        // {name:`${aiMove}h`,x:200,y:200,r:0},
+        {name:`${aiMove}h`,x:300,y:300,r:180},        
+        {name:`${enemyIcon}`,x:50,y:200,r:0},
+        {name:`${aiMove}`,x:350,y:200,r:0},                
+        {name:`${playerMove}h`,x:200,y:350,r:0},
+        {name:`${playerMove}`,x:350,y:350,r:0},
         {name:`${playerIcon}`,x:50,y:350,r:0},
     ];
     document.getElementById('start-button').innerText = 'Play Again'; 
@@ -433,6 +441,7 @@ function animation(){
         ]; 
         updateCenterText(`${actions[l]}!`);
         document.getElementById('start-button').innerText = 'Shoot';
+        toggleDOM('start-button');
         frame++;
         l = 0;
         clearInterval(animationID);

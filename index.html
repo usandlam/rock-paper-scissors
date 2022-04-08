@@ -4,31 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>🪨 📃 ✂️ ...💥🔫</title>
+    <title>🪨 📃 ✂️ </title>
     <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
     <div class="main">
-      🪨 📃 ✂️ ... 💥🔫
+      ⚔️
         <div class="gameArea">
-          <div id="health">
+          <div id="health" class="hud hide">
             <h5>Health</h5>
             <span id="hp"></span>
-            <img id="hp-img" src="" alt="">
+            <img id="hp-img" class="player" src="https://twemoji.maxcdn.com/v/latest/svg/1f51f.svg" alt="health" >
           </div>
           <canvas id="canvas" width="500" height="500"></canvas>
-          <div id="score">
+          <div id="score" class="hud hide">
             <h5>Score</h5>
-            <span id="points"></span>
+            <span id="points" class="player">0</span>
           </div>
         </div>
           <span id="center-screen">Game Loading...</span>
           <img src="./img/loading.svg" id="loading" alt="loading">
         <div class="buttons">
-            <button class="action-btn" id="back-button">Health</button>
             <button class="action-btn" id="start-button">Start</button>
-            <button class="action-btn" id="fwd-button">Score</button>
         </div>
     </div>
     <script src="js/index.js"></script>
