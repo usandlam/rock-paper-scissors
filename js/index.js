@@ -4,7 +4,7 @@ class Player {
         this.health = 10;
         this.score = 0;
         this.icon = '';
-        this.enemy = "tiger";
+        this.enemy = '';
         this.lastRound;
         this.round = [];
     }
@@ -14,7 +14,11 @@ class Player {
         //this.icon
         //playerIcons
         //enemyIcons
-        this.icon = playerIcons[choice];
+        if(who == 'self'){
+            this.icon = iconChoices.icon[choice];
+        }else{
+            this.enemy = iconChoices.enemy[choice];
+        }
     }
 
     attack(attack){
@@ -68,11 +72,20 @@ window.onload = () => {
                 window.location.reload();
                 break;
             case 0:
-                charSelect();
+                playSpace.start();
+                toggleDOM('loading');     
+                updateCenterText('Choose your player: ');
+                iconSelect('icon',0);
                 break;
+            case 2:
+                // playSpace.start();
+                // toggleDOM('loading');     
+                // updateCenterText('Choose your opponent: ');
+                // iconSelect('enemy',1);
+                break;                
             case 3:
                 gameEnd();
-                gameState = 4;
+                gameState = 5;
                 break;
             case 4:
                 gameStart();
@@ -154,7 +167,7 @@ const hpCounter = [
     genSrc('38-20e3',false),
     genSrc('39-20e3',false),
     genSrc('1f51f',false)];
-    
+
 const gameObj = {};
 function buildGameObj(name,codePoint){
     gameObj[name] = {
@@ -268,42 +281,53 @@ function getClick(opt){
     if(opt < 0 ) { return -1; }
     // console.log(`Game state # ${gameState}`);
     if(gameState === 0){
-        human.chooseIcon(opt);
-        gameStart();
+        human.chooseIcon(opt,'self');
         toggleDOM('health');
-        toggleDOM('score');      
+        toggleDOM('score');
+        updateCenterText('Choose your opponent: ');
+        iconSelect('enemy',1);
+        frame++;
+        gameState = 1;
+    }else if(gameState === 1){
+        human.chooseIcon(opt,'enemy');
+        gameStart();
+        gameState = 2;
     }else if(gameState == 2 && opt < 3){
         human.attack(opt);
         animationID = setInterval(animation,752);
-        gameState = 3;
-    }else if(gameState == 3){
-        gameEnd();
         gameState = 4;
     }else if(gameState == 4){
+        gameEnd();
+        gameState = 5;
+    }else if(gameState == 5){
         gameStart();
     }
 }
 
 function updateGameArea(){
     playSpace.clear();
-    // console.log(frame);
+    console.log(frame);
     renderCanvasObj(gameArea[frame]);
     displayHP(human.health);
     displayScore(human.score);
     //check for game over or in displayHP?
 }
 
-function iconSelect(iconArray){
+const iconChoices = {
+    icon: ['chick','deer','monkey','panda','racoon','wolf'], 
+    enemy: ['bear','tiger','owl','frog','sloth','dog']};
 
-    gameArea[frame] = [];
+function iconSelect(target,scene){
+    //target = icon || enemy
+    gameArea[scene] = [];
     let order = 1;
     x = 50;
     y = 350;
-    iconArray.forEach(icon =>{
+    iconChoices[target].forEach(icon =>{
         if(order <= 3){
-            gameArea[frame].push( {name:`${icon}`,x,y,r:0},);  
+            gameArea[scene].push( {name:`${icon}`,x,y,r:0},);  
         }else{     
-            gameArea[frame].push( {name:`${icon}`,x,y,r:0},);      
+            gameArea[scene].push( {name:`${icon}`,x,y,r:0},);      
         }
         x+=150;
         if(order % 3 == 0){
@@ -312,32 +336,6 @@ function iconSelect(iconArray){
         }        
         order++;        
     });
-    playSpace.start();
-    toggleDOM('loading');
-
-}
-
-function charSelect(){
-    updateCenterText('Choose your player: ');    
-    gameArea[frame] = [];
-    let order = 1;
-    x = 50;
-    y = 350;
-    playerIcons.forEach(icon =>{
-        if(order <= 3){
-            gameArea[frame].push( {name:`${icon}`,x,y,r:0},);  
-        }else{     
-            gameArea[frame].push( {name:`${icon}`,x,y,r:0},);      
-        }
-        x+=150;
-        if(order % 3 == 0){
-            y = y - 150;
-            x = 50;
-        }        
-        order++;        
-    });
-    playSpace.start();
-    toggleDOM('loading');
 }
 
 function gameStart(){
@@ -349,7 +347,7 @@ function gameStart(){
     // playSpace.start();
     updateCenterText('Pick your move: ');
     toggleDOM('start-button');
-    gameState = 2;
+    gameState = 3;
 }
 
 function gameEnd(){
